@@ -1,0 +1,41 @@
+.modal {
+  display: block !important;
+  opacity: 1;
+  width: 400px;
+  height: 600px;
+
+}
+
+.modal-header {
+  cursor: move;
+  user-select: none;  /* Disable text selection */
+}
+
+.modal-body {
+  padding: 10px;
+}
+
+
+.modal-content {
+  user-select: none;
+}
+
+
+
+th[appDraggableColumn] {
+  position: relative;
+}
+
+.resizable-handle {
+  width: 5px;
+  height: 100%;
+  position: absolute;
+  right: 0;
+  top: 0;
+  cursor: ew-resize;
+  background-color: #888; /* Light grey color */
+}
+
+table {
+  table-layout: auto; /* Allow column resizing */
+}
