@@ -39,3 +39,17 @@ th[appDraggableColumn] {
 table {
   table-layout: auto; /* Allow column resizing */
 }
+
+.material-icons {
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+.resizable-handle {
+  display: inline-block;
+  width: 5px;
+  height: 100%;
+  background-color: #ccc;
+  cursor: ew-resize;
+  float: right;
+}

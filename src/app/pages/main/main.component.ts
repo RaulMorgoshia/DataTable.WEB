@@ -18,17 +18,21 @@ import { UpdateItemService } from '../../services/update-item.service';
 })
 export class MainComponent implements OnInit {
   items: Item[] = [];
+  filteredItems: Item[] = [];
   selectedItems: Set<number> = new Set();
   isOpen = false;
   position = { top: '30%', left: '40%' };
   editItem: Item = { id: 0, no: '', name: '', description: '', price: 0 };
 
+  sortColumn: keyof Item | '' = ''; // Ensuring only valid keys can be used
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   constructor(
     private itemsService: ItemsServiceService,
     private createItemService: CreateItemService,
     private deleteItemService: DeleteItemService,
-    private updateItemService: UpdateItemService,
-  ) {}
+    private updateItemService: UpdateItemService
+  ) { }
 
   ngOnInit(): void {
     this.loadItems();
@@ -36,11 +40,50 @@ export class MainComponent implements OnInit {
 
   loadItems(): void {
     this.itemsService.getItems().subscribe(
-      (data: Item[]) => (this.items = data),
+      (data: Item[]) => {
+        this.items = data;
+        this.filteredItems = [...this.items];
+      },
       (error) => console.error('Error loading items', error)
     );
   }
 
+  /*** Sorting Function ***/
+  sortTable(column: keyof Item) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+
+    this.filteredItems.sort((a, b) => {
+      const valueA = a[column];
+      const valueB = b[column];
+
+      if (typeof valueA === 'string' && typeof valueB === 'string') {
+        return this.sortDirection === 'asc'
+          ? valueA.localeCompare(valueB)
+          : valueB.localeCompare(valueA);
+      }
+
+      if (typeof valueA === 'number' && typeof valueB === 'number') {
+        return this.sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
+      }
+
+      return 0;
+    });
+  }
+
+  /*** Filtering Function ***/
+  filterTable(column: keyof Item, event: any) {
+    const value = event.target.value.toLowerCase();
+    this.filteredItems = this.items.filter((item) =>
+      item[column]?.toString().toLowerCase().includes(value)
+    );
+  }
+
+  /*** Row Selection Functions ***/
   onRowSelect(item: Item): void {
     item.selected = !item.selected;
     this.updateSelection(item);
@@ -62,6 +105,7 @@ export class MainComponent implements OnInit {
     }
   }
 
+  /*** Create & Edit Functions ***/
   onCreate(): void {
     this.prepareModalForNewItem();
     this.openModal();
@@ -79,17 +123,18 @@ export class MainComponent implements OnInit {
 
   onSaveNewItem(): void {
     if (this.editItem.id === 0) {
-      const newItem = { 
-        id: 0, 
-        no: this.editItem.no || '', 
-        name: this.editItem.name || '', 
-        description: this.editItem.description || '', 
+      const newItem: Item = {
+        id: 0,
+        no: this.editItem.no || '',
+        name: this.editItem.name || '',
+        description: this.editItem.description || '',
         price: this.editItem.price || 0
       };
-  
+
       this.createItemService.createItem(newItem).subscribe(
         (createdItem) => {
           this.items.push(createdItem);
+          this.filteredItems = [...this.items]; // Update filtered list
           this.closeModal();
         },
         (error) => console.error('Error creating item', error)
@@ -99,25 +144,31 @@ export class MainComponent implements OnInit {
         (updatedItem) => {
           const index = this.items.findIndex(item => item.id === updatedItem.id);
           if (index !== -1) {
-            this.items[index] = updatedItem; 
+            this.items[index] = updatedItem;
           }
+          this.filteredItems = [...this.items]; // Update filtered list
           this.closeModal();
         },
         (error) => console.error('Error updating item', error)
       );
     }
   }
-  
+
+  /*** Delete Function ***/
   onDelete(): void {
     this.selectedItems.forEach((id) => {
       this.deleteItemService.deleteItem(id).subscribe(
-        () => (this.items = this.items.filter(item => item.id !== id)),
+        () => {
+          this.items = this.items.filter(item => item.id !== id);
+          this.filteredItems = [...this.items]; // Update filtered list
+        },
         (error) => console.error('Error deleting item', error)
       );
     });
     this.selectedItems.clear();
   }
 
+  /*** Modal Functions ***/
   openModal(): void {
     this.isOpen = true;
   }

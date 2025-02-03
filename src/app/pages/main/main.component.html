@@ -1,60 +1,87 @@
 <div class="container mt-5">
-  <h1>Items List</h1>
+  <h1>პროდუქცია</h1>
 
   <!-- Action Buttons -->
   <div class="mb-3">
     <button class="btn btn-primary me-3" (click)="onCreate()">
-      <span class="material-icons">add</span> Create
+      <span class="material-icons"></span> დამატება
     </button>
     <button class="btn btn-warning me-3" (click)="onEdit()" [disabled]="!hasSelectedItems()">
-      <span class="material-icons">edit</span> Edit
+      <span class="material-icons"></span>შესწორება
     </button>
     <button class="btn btn-danger" (click)="onDelete()" [disabled]="!hasSelectedItems()">
-      <span class="material-icons">delete</span> Delete Selected
+      <span class="material-icons"></span>წაშლა
     </button>
   </div>
 
-<!-- Item Table -->
-<div>
-  <table class="table table-striped table-bordered rounded">
-    <thead>
-      <tr>
-        <th scope="col">
-          <input type="checkbox" (change)="selectAll($event)" />
-        </th>
-        <th scope="col" appDraggableColumn>
-          No
-          <div class="resizable-handle"></div>
-        </th>
-        <th scope="col" appDraggableColumn>
-          Name
-          <div class="resizable-handle"></div>
-        </th>
-        <th scope="col" appDraggableColumn>
-          Description
-          <div class="resizable-handle"></div>
-        </th>
-        <th scope="col" appDraggableColumn>
-          Price
-          <div class="resizable-handle"></div>
-        </th>
-      </tr>
-    </thead>
-    <tbody *ngIf="items.length > 0">
-      <tr *ngFor="let item of items" [class.selected]="item.selected" (click)="onRowSelect(item)">
-        <td>
-          <input type="checkbox" [(ngModel)]="item.selected" />
-        </td>
-        <td>{{ item.no }}</td>
-        <td>{{ item.name }}</td>
-        <td>{{ item.description }}</td>
-        <td>{{ item.price | currency }}</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+  <!-- Filter Row -->
+  <div class="mb-3">
+    <div class="row">
+      <div class="col">
+        <input type="text" class="form-control" (input)="filterTable('no', $event)" placeholder="ფილტრაცია ნომრით">
+      </div>
+      <div class="col">
+        <input type="text" class="form-control" (input)="filterTable('name', $event)" placeholder="ფილტრაცია დასახელებით">
+      </div>
+      <div class="col">
+        <input type="text" class="form-control" (input)="filterTable('description', $event)" placeholder="ფილტრაცია აღწერით">
+      </div>
+      <div class="col">
+        <input type="text" class="form-control" (input)="filterTable('price', $event)" placeholder="ფილტრაცია ფასით">
+      </div>
+    </div>
+  </div>
 
-
+  <!-- Item Table -->
+  <div>
+    <table class="table table-striped table-bordered rounded">
+      <thead>
+        <tr>
+          <th scope="col"></th>
+          <th scope="col" appDraggableColumn (click)="sortTable('no')">
+            <span class="material-icons">
+              {{ sortColumn === 'no' ? (sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'swap_vert' }}
+            </span>
+            No
+            <div class="resizable-handle"></div>
+          </th>
+          <th scope="col" appDraggableColumn (click)="sortTable('name')">
+            <span class="material-icons">
+              {{ sortColumn === 'name' ? (sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'swap_vert' }}
+            </span>
+            Name
+            <div class="resizable-handle"></div>
+          </th>
+          <th scope="col" appDraggableColumn (click)="sortTable('description')">
+            <span class="material-icons">
+              {{ sortColumn === 'description' ? (sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'swap_vert' }}
+            </span>
+            Description
+            <div class="resizable-handle"></div>
+          </th>
+          <th scope="col" appDraggableColumn (click)="sortTable('price')">
+            <span class="material-icons">
+              {{ sortColumn === 'price' ? (sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'swap_vert' }}
+            </span>
+            Price
+            <div class="resizable-handle"></div>
+          </th>
+        </tr>
+      </thead>
+      
+      <tbody *ngIf="filteredItems.length > 0">
+        <tr *ngFor="let item of filteredItems" [class.selected]="item.selected" (click)="onRowSelect(item)">
+          <td>
+            <input type="checkbox" [(ngModel)]="item.selected" />
+          </td>
+          <td>{{ item.no }}</td>
+          <td>{{ item.name }}</td>
+          <td>{{ item.description }}</td>
+          <td>{{ item.price | currency }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
   <!-- Modal Dialog -->
   <div class="modal" *ngIf="isOpen" [ngClass]="{ 'show': isOpen }" [ngStyle]="{ top: position.top, left: position.left }" appDraggable>
